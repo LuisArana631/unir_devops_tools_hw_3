@@ -12,3 +12,8 @@ variable "key_name" {
   description = "The name of the SSH key pair to access instances."
   type        = string
 }
+
+variable "availability_zone" {
+  description = "The availability zone to launch the instance in."
+  type        = string
+}

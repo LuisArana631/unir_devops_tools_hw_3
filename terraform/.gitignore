@@ -8,3 +8,4 @@
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+mean_stack

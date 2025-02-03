@@ -1,12 +1,13 @@
 resource "aws_security_group" "mongodb_sg" {
   name        = "mongodb_security_group"
   description = "Security group for MongoDB instance"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.subnet_cidr]
   }
 
   egress {

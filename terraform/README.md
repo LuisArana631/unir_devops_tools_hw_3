@@ -55,12 +55,28 @@ Para preparar y aplicar la configuración con Terraform, sigue estos pasos:
   terraform apply "mean_stack"
   ```
 
+  Para este caso te solicitara entre las variables la region, puedes responder con la region ```us-east-1``` y la zona de disponibilidad ```us-east-1a```.
+
 ### 1.7 Destrucción de la infraestructura
 
   - Ejecuta el comando `terraform destroy` para eliminar los recursos.
 
   ```bash
   terraform destroy
+  ```
+
+### 1.8 Fallo en la creación de la instancia
+
+  - Si la instancia no se crea correctamente, ejecuta el comando `terraform plan -out mean_stack -destroy` nuevamente.
+
+  ```bash
+  terraform plan -out mean_stack -destroy
+  ```
+
+  - Luego, ejecuta el comando `terraform apply "mean_stack"` para eliminar los recursos.
+
+  ```bash
+  terraform apply "mean_stack"
   ```
 
 ## 2. Terraform nginx - nodejs

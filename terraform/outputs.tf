@@ -9,3 +9,9 @@ output "private_ips" {
     "MongoDB IP" = module.mongodb.mongodb_private_ip
   }
 }
+
+output "vpc_info" {
+  value = {
+    "Subnet ID" = module.network.subnet_id
+  }
+}

@@ -1,0 +1,59 @@
+<div>
+  <!-- NAVIGATION -->
+  <mat-toolbar color="primary">
+    <span>MEAN Stack</span>
+  </mat-toolbar>
+
+  <div class="container">
+    <div class="col">
+      <div class="col m2">
+        <mat-card class="center full-width">
+          <mat-card-content>
+            <form (submit)="addOrUpdateTask()">
+              <p>
+                <mat-form-field style="width: 100%;">
+                  <input matInput [(ngModel)]="title" name="title" placeholder="Task Title" autofocus/>
+                </mat-form-field>
+              </p>
+              <p>
+                <mat-form-field style="width: 100%;">
+                  <textarea matInput [(ngModel)]="description" name="description" placeholder="Task Description"></textarea>
+                </mat-form-field>
+              </p>
+              <button mat-raised-button color="primary" type="submit" style="width: 50%;">
+                Send
+              </button>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <br/>
+      <div class="col m7">
+        <table mat-table [dataSource]="tasks" class="mat-elevation-z8">
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let task">{{ task.title }}</td>
+          </ng-container>
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let task">{{ task.description }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let task">
+              <button mat-icon-button (click)="deleteTask(task._id)" color="warn">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button mat-icon-button (click)="editTask(task)" color="primary">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['title', 'description', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['title', 'description', 'actions'];"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

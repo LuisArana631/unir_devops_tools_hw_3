@@ -33,27 +33,34 @@ Para preparar y aplicar la configuración con Terraform, sigue estos pasos:
 
 ### 1.4 Planificacion de la infraestructura
 
-  - Ejecuta el comando `terraform plan` para ver los recursos que se crearán.
+  - Ejecuta el comando `terraform validate` para validar la configuración.
 
   ```bash
-  terraform plan
+  terraform validate
   ```
 
-### 1.5 Aplicación de la infraestructura
+### 1.5 Planificación de la infraestructura
+
+  - Ejecuta el comando `terraform plan` para crear un plan de ejecución.
+
+  ```bash
+  terraform plan -out mean_stack
+  ```
+
+### 1.6 Aplicación de la infraestructura
 
   - Ejecuta el comando `terraform apply` para crear los recursos.
 
   ```bash
-  terraform apply
+  terraform apply "mean_stack"
   ```
 
-### 1.6 Destrucción de la infraestructura
+### 1.7 Destrucción de la infraestructura
 
   - Ejecuta el comando `terraform destroy` para eliminar los recursos.
 
   ```bash
   terraform destroy
   ```
-
 
 ## 2. Terraform nginx - nodejs

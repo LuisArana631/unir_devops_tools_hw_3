@@ -1,0 +1,70 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Instalando Docker..."
+      - apt-get update -y
+      - apt-get install -y ca-certificates curl gnupg
+      - install -m 0755 -d /etc/apt/keyrings
+      - echo "Descargando clave GPG de Docker y configurando keyring..."
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      - chmod a+r /etc/apt/keyrings/docker.gpg
+      - echo "Agregando repositorio Docker..."
+      - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      - apt-get update -y
+      - apt-get install -y docker-ce docker-ce-cli containerd.io
+      - docker --version
+
+      # Instalar Terraform
+      - echo "Instalando Terraform..."
+      - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
+      - unzip terraform_1.4.0_linux_amd64.zip
+      - sudo mv terraform /usr/local/bin/
+      - terraform --version
+
+  pre_build:
+    commands:
+      - echo "Autenticándose en Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+  build:
+    commands:
+      - echo "Construyendo y publicando imagen Docker del FRONTEND..."
+      - cd mean-js/frontend
+      - docker build -t unir/frontend .
+      - docker tag unir/frontend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
+      - cd ../..
+      
+      - echo "Construyendo y publicando imagen Docker del BACKEND..."
+      - cd mean-js/backend
+      - docker build -t unir/backend .
+      - docker tag unir/backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
+      - cd ../..
+      
+      - echo "Ejecutando Terraform para actualizar infraestructura Fargate..."
+      - cd terraform
+      - terraform init
+      - |
+        terraform plan -detailed-exitcode -out=tfplan || PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+      - |
+        if [ "$PLAN_EXIT_CODE" -eq 2 ]; then
+          echo "Cambios detectados, aplicando Terraform Apply..."
+          terraform apply -auto-approve tfplan;
+        elif [ "$PLAN_EXIT_CODE" -eq 0 ]; then
+          echo "No se detectaron cambios en la infraestructura.";
+        else
+          echo "Error al ejecutar Terraform plan.";
+          exit 1;
+        fi
+
+  post_build:
+    commands:
+      - echo "Proceso de build y despliegue para Fargate completado."
+
+artifacts:
+  files:
+    - "**/*"

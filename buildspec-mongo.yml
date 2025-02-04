@@ -1,0 +1,43 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo "Instalando Terraform..."
+      - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
+      - unzip terraform_1.4.0_linux_amd64.zip
+      - sudo mv terraform /usr/local/bin/
+      - terraform --version
+
+  pre_build:
+    commands:
+      - echo "Inicializando Terraform para Mongo..."
+      - cd terraform/mongodb
+      - terraform init
+
+  build:
+    commands:
+      - echo "Ejecutando Terraform para actualizar infraestructura Mongo..."
+      - |
+        terraform plan -detailed-exitcode -out=tfplan || PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+      - |
+        if [ "$PLAN_EXIT_CODE" -eq 2 ]; then
+          echo "Cambios detectados, aplicando Terraform Apply..."
+          terraform apply -auto-approve tfplan;
+        elif [ "$PLAN_EXIT_CODE" -eq 0 ]; then
+          echo "No se detectaron cambios en la infraestructura.";
+        else
+          echo "Error al ejecutar Terraform plan.";
+          exit 1;
+        fi
+
+  post_build:
+    commands:
+      - echo "Proceso de build y despliegue para Mongo completado."
+
+artifacts:
+  files:
+    - "**/*"

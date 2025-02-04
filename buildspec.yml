@@ -1,0 +1,63 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo "Instalando Terraform..."
+      # Descargar e instalar Terraform (ajusta la versión según necesites)
+      - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
+      - unzip terraform_1.4.0_linux_amd64.zip
+      - sudo mv terraform /usr/local/bin/
+      - terraform --version
+
+  pre_build:
+    commands:
+      - echo "Autenticándose en Amazon ECR..."
+      # Autenticación en ECR usando AWS CLI y las variables de entorno AWS_DEFAULT_REGION y AWS_ACCOUNT_ID
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+  build:
+    commands:
+      - echo "Construyendo y publicando imagen Docker del FRONTEND..."
+      - cd mean-js/frontend
+      - docker build -t unir/frontend .
+      # Etiqueta la imagen para ECR
+      - docker tag unir/frontend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
+      - cd ../..
+
+      - echo "Construyendo y publicando imagen Docker del BACKEND..."
+      - cd mean-js/backend
+      - docker build -t unir/backend .
+      # Etiqueta la imagen para ECR
+      - docker tag unir/backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
+      - cd ../..
+
+      - echo "Ejecutando Terraform para actualizar infraestructura si existen cambios..."
+      - cd terraform
+      - terraform init
+      - |
+        # Ejecuta terraform plan y captura el exit code:
+        terraform plan -detailed-exitcode -out=tfplan || PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+      - |
+        if [ "$PLAN_EXIT_CODE" -eq 2 ]; then
+          echo "Cambios detectados, aplicando Terraform Apply..."
+          terraform apply -auto-approve tfplan;
+        elif [ "$PLAN_EXIT_CODE" -eq 0 ]; then
+          echo "No se detectaron cambios en la infraestructura.";
+        else
+          echo "Error al ejecutar Terraform plan.";
+          exit 1;
+        fi
+
+  post_build:
+    commands:
+      - echo "Proceso de build y despliegue completado."
+
+artifacts:
+  files:
+    - "**/*"

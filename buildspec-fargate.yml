@@ -3,16 +3,23 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Installing Docker..."
-      - yum update -y
-      - amazon-linux-extras install docker -y  # Use Amazon Linux extras
-      - service docker start
+      # Instalar Docker en Ubuntu
+      - echo "Instalando Docker..."
+      - apt-get update -y
+      - apt-get install -y ca-certificates curl gnupg
+      - install -m 0755 -d /etc/apt/keyrings
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      - chmod a+r /etc/apt/keyrings/docker.gpg
+      - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      - apt-get update -y
+      - apt-get install -y docker-ce docker-ce-cli containerd.io
       - docker --version
 
-      - echo "Installing Terraform..."
+      # Instalar Terraform
+      - echo "Instalando Terraform..."
       - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
       - unzip terraform_1.4.0_linux_amd64.zip
-      - mv terraform /usr/local/bin/
+      - sudo mv terraform /usr/local/bin/
       - terraform --version
 
   pre_build:

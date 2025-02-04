@@ -6,7 +6,6 @@ phases:
       docker: 20
     commands:
       - echo "Instalando Terraform..."
-      # Descargar e instalar Terraform (ajusta la versión según necesites)
       - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
       - unzip terraform_1.4.0_linux_amd64.zip
       - sudo mv terraform /usr/local/bin/
@@ -15,7 +14,6 @@ phases:
   pre_build:
     commands:
       - echo "Autenticándose en Amazon ECR..."
-      # Autenticación en ECR usando AWS CLI y las variables de entorno AWS_DEFAULT_REGION y AWS_ACCOUNT_ID
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   build:
@@ -23,24 +21,21 @@ phases:
       - echo "Construyendo y publicando imagen Docker del FRONTEND..."
       - cd mean-js/frontend
       - docker build -t unir/frontend .
-      # Etiqueta la imagen para ECR
       - docker tag unir/frontend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/frontend:latest
       - cd ../..
-
+      
       - echo "Construyendo y publicando imagen Docker del BACKEND..."
       - cd mean-js/backend
       - docker build -t unir/backend .
-      # Etiqueta la imagen para ECR
       - docker tag unir/backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unir/backend:latest
       - cd ../..
-
-      - echo "Ejecutando Terraform para actualizar infraestructura si existen cambios..."
+      
+      - echo "Ejecutando Terraform para actualizar infraestructura Fargate..."
       - cd terraform
       - terraform init
       - |
-        # Ejecuta terraform plan y captura el exit code:
         terraform plan -detailed-exitcode -out=tfplan || PLAN_EXIT_CODE=$?
         echo "Terraform plan exit code: $PLAN_EXIT_CODE"
       - |
@@ -56,7 +51,7 @@ phases:
 
   post_build:
     commands:
-      - echo "Proceso de build y despliegue completado."
+      - echo "Proceso de build y despliegue para Fargate completado."
 
 artifacts:
   files:

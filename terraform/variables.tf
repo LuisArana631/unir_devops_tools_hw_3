@@ -3,22 +3,16 @@ variable "profile" {
   type        = string
 }
 
-variable "key_name" {
-  description = "The name of the SSH key pair to access instances."
-  type        = string
-}
-
 variable "aws_region" {
   description = "AWS Region"
   type        = string
   default     = "us-east-1"
 }
 
-variable "vpc_cidr" {
-  description = "CIDR for the VPC"
+variable "vpc_id" {
+  description = "ID of the VPC"
   type        = string
 }
-
 variable "public_subnets" {
   description = "List of public subnet CIDRs (or IDs if pre-existing)"
   type        = list(string)
@@ -27,7 +21,7 @@ variable "public_subnets" {
 variable "availability_zone" {
   description = "Availability zone for the subnets"
   type        = string
-  default     = "us-east-1a"
+  default     = "us-east-1"
 }
 
 variable "execution_role_arn" {
@@ -62,5 +56,10 @@ variable "mongo_ami" {
 
 variable "mongo_instance_type" {
   description = "Instance type for MongoDB"
+  type        = string
+}
+
+variable "key_name" {
+  description = "Name of the SSH keypair to use"
   type        = string
 }

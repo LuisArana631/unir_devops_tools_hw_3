@@ -1,15 +1,9 @@
-resource "aws_vpc" "my_vpc" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-  tags = {
-    Name = "MyUnirVPC"
-  }
+resource "aws_vpc" "existing_vpc" {
+  id = var.vpc_id
 }
 
 resource "aws_subnet" "my_subnet" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.1.0/24"
+  vpc_id            = aws_vpc.existing_vpc.id
   availability_zone = var.availability_zone
   tags = {
     Name = "MyUnirSubnet"
@@ -18,7 +12,7 @@ resource "aws_subnet" "my_subnet" {
 resource "aws_security_group" "ecs_alb_sg" {
   name        = "ecs-alb-sg"
   description = "SG for ECS tasks and ALB"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.existing_vpc.id
 
   ingress {
     description = "Allow HTTP"
@@ -47,7 +41,7 @@ resource "aws_security_group" "ecs_alb_sg" {
 resource "aws_security_group" "mongo_sg" {
   name        = "mongo-sg"
   description = "Security group for MongoDB instance"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.existing_vpc.id
 
   ingress {
     description = "MongoDB access"

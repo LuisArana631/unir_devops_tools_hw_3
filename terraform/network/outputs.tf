@@ -10,13 +10,13 @@ output "subnet_cidr" {
   value = aws_subnet.my_subnet.cidr_block
 }
 
-output "network.ecs_alb_sg_id" {
+output "network_ecs_alb_sg_id" {
   value = aws_security_group.ecs_alb_sg.id
 
 }
 
 output "vpc_id" {
-  value = aws_vpc.existing_vpc.id
+  value = data.aws_vpc.existing_vpc.id
 }
 
 output "public_subnets" {

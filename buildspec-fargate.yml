@@ -3,8 +3,11 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      docker: 20
     commands:
+      - echo "Installing Docker..."
+      - apt-get update -y
+      - apt-get install -y docker.io
+      - docker --version  # Verify installation
       - echo "Instalando Terraform..."
       - wget https://releases.hashicorp.com/terraform/1.4.0/terraform_1.4.0_linux_amd64.zip
       - unzip terraform_1.4.0_linux_amd64.zip
